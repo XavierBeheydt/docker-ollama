@@ -1,0 +1,41 @@
+# Project: docker-comfyui
+# Reworked by: Copyright Xavier Beheydt. All rights reserved.
+
+name: LLM-ollama
+
+networks:
+  frontend:
+
+
+volumes:
+  open-webui:
+
+
+services:
+  backend:
+    image: ollama/ollama:latest
+    gpus: all
+    env_file:
+      - .env
+    volumes:
+      - ${OLLAMA_MODELS}:/root/.ollama
+    ports:
+      - ${OLLAMA_PORT}:11434
+    networks:
+      - frontend
+
+  webui-1:
+    image: ghcr.io/open-webui/open-webui:main
+    links:
+      - backend
+    gpus: all
+    env_file:
+      - .env
+    environment:
+      - OLLAMA_BASE_URL=http://backend:11434/
+    volumes:
+      - open-webui:/app/backend/data
+    ports:
+      - ${OPEN_WEBUI_PORT}:8080
+    networks:
+      - frontend
